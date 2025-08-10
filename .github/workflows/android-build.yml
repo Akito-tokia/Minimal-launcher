@@ -1,0 +1,42 @@
+name: Build Minimal Launcher APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          gradle-
+
+    - name: Download Gradle Wrapper
+      run: ./gradlew --version
+
+    - name: Build APK
+      run: ./gradlew assembleRelease
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: minimal-launcher-release-apk
+        path: app/build/outputs/apk/release/app-release.apk
